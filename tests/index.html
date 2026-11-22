@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Testes · Ecos de Lumora</title>
+  <style>
+    :root { --bg: #0b0820; --panel: #15112e; --ink: #e9e4ff; --muted: #a99fd6; --pass: #59e0c5; --fail: #ff6fae; --skip: #8a8496; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, sans-serif; }
+    main { max-width: 900px; margin: 0 auto; padding: 24px 16px 64px; }
+    h1 { margin: 0 0 4px; color: var(--pass); }
+    h2 { margin: 28px 0 8px; font-size: 1.1em; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; }
+    p { color: var(--muted); margin: 0 0 12px; }
+    .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 16px 0; }
+    button { font: inherit; color: var(--ink); background: #241d4a; border: 1px solid #4a3f9a; border-radius: 8px; padding: 6px 14px; cursor: pointer; }
+    button:hover { border-color: var(--pass); }
+    button:disabled { opacity: .5; cursor: wait; }
+    #summary { font-weight: 600; }
+    #summary.ok { color: var(--pass); } #summary.bad { color: var(--fail); }
+    progress { width: 100%; height: 6px; accent-color: var(--pass); }
+    .suite { background: var(--panel); border-radius: 10px; padding: 8px 14px; margin: 10px 0; }
+    .suite h3 { margin: 4px 0; font-size: 1em; }
+    ul { list-style: none; margin: 0; padding: 0; }
+    li { padding: 3px 0; display: grid; grid-template-columns: 1.6em 1fr auto; gap: 6px; }
+    li .ms { color: var(--skip); font-size: .85em; }
+    li.pass .icon { color: var(--pass); } li.fail .icon { color: var(--fail); } li.skip { color: var(--skip); }
+    li .err { grid-column: 2 / 4; color: var(--fail); font-family: ui-monospace, monospace; font-size: .85em; white-space: pre-wrap; }
+    .sounds { display: flex; flex-wrap: wrap; gap: 6px; }
+    code { background: #241d4a; padding: 1px 5px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Testes · Ecos de Lumora</h1>
+    <p>Abra esta página pelo Live Server (ex.: <code>http://127.0.0.1:5500/tests/</code>). Os testes rápidos rodam sozinhos ao abrir.
+       Seu salvamento real não é alterado.</p>
+
+    <div class="bar">
+      <button id="run-fast">Rodar testes rápidos</button>
+      <button id="run-all">Rodar todos (inclui os lentos, ~20 s)</button>
+      <span id="summary"></span>
+    </div>
+    <progress id="progress" value="0" max="1"></progress>
+    <div id="results"></div>
+
+    <h2>Ouvir os sons</h2>
+    <p>O teste automático confere que cada som <em>existe</em>; só ouvindo dá para julgar se ele soa bem. Clique para tocar.</p>
+    <div id="sounds" class="sounds"></div>
+    <div class="bar">
+      <button id="music-menu">▶ Música do menu</button>
+      <button id="music-bosque">▶ Música do Bosque</button>
+      <button id="music-stop">■ Parar música</button>
+    </div>
+  </main>
+  <script type="module" src="run.js"></script>
+</body>
+</html>

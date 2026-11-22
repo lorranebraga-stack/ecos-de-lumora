@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <!-- Celular: ocupa a tela toda (inclusive ao redor do entalhe) e não deixa dar zoom -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0820">
+  <title>Ecos de Lumora</title>
+  <!-- Instalar como app (Android/Chrome e iPhone/Safari: "Adicionar à tela de início") -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Lumora">
+  <!-- Fonte opcional: sem internet, o jogo usa a fonte reserva definida no CSS. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&display=swap">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main id="stage">
+    <canvas id="game" aria-label="Ecos de Lumora"></canvas>
+
+    <!-- MENU PRINCIPAL -->
+    <section id="menu" class="overlay hidden">
+      <div id="menu-main" class="panel">
+        <p class="kicker">um mundo que esqueceu de si</p>
+        <h1 class="title">Ecos de <span>Lumora</span></h1>
+        <nav class="menu-buttons">
+          <button id="btn-continue" class="hidden">Continuar <small id="continue-detail"></small></button>
+          <button id="btn-new">Novo jogo</button>
+          <button id="btn-map">Mapa de Lumora</button>
+          <button id="btn-settings">Configurações</button>
+          <button id="btn-controls">Controles</button>
+          <button id="btn-credits">Créditos</button>
+          <button id="btn-fullscreen" class="hidden">Tela cheia</button>
+        </nav>
+        <p class="version">versão 1.4 · 5 regiões · missões, segredos e estrelas</p>
+      </div>
+
+      <div id="menu-confirm-new" class="panel hidden">
+        <h2>Começar do zero?</h2>
+        <p>Existe uma partida salva em andamento.<br>Ela será substituída. Seus recordes continuam.</p>
+        <nav class="menu-buttons">
+          <button id="btn-confirm-new">Sim, novo jogo</button>
+          <button data-back>Voltar</button>
+        </nav>
+      </div>
+
+      <div id="menu-map" class="panel hidden">
+        <h2>Mapa de Lumora</h2>
+        <p id="map-stars" class="small"></p>
+        <ol id="region-list" class="region-list"></ol>
+        <button data-back>Voltar</button>
+      </div>
+
+      <div id="menu-settings" class="panel hidden">
+        <h2>Configurações</h2>
+        <p id="save-status" class="small"></p>
+        <p id="audio-status" class="small"></p>
+        <p id="graphics-status" class="small"></p>
+        <nav class="menu-buttons">
+          <button id="btn-toggle-graphics">Gráficos: 3D</button>
+          <button id="btn-toggle-chars">Personagens: 3D</button>
+          <button id="btn-toggle-sound">Som: ligado</button>
+          <button id="btn-toggle-music">Música: ligada</button>
+          <button id="btn-erase">Apagar progresso</button>
+          <button data-back>Voltar</button>
+        </nav>
+      </div>
+
+      <div id="menu-confirm-erase" class="panel hidden">
+        <h2>Apagar todo o progresso?</h2>
+        <p>Partida salva, recordes e regiões desbloqueadas serão apagados.<br>Isso não pode ser desfeito.</p>
+        <nav class="menu-buttons">
+          <button id="btn-confirm-erase" class="danger">Apagar tudo</button>
+          <button id="btn-cancel-erase">Cancelar</button>
+        </nav>
+      </div>
+
+      <div id="menu-controls" class="panel hidden">
+        <h2>Controles</h2>
+        <dl class="keys">
+          <dt><kbd>A</kbd> <kbd>D</kbd> ou <kbd>←</kbd> <kbd>→</kbd></dt><dd>Mover</dd>
+          <dt><kbd>Espaço</kbd></dt><dd>Pular (segure para ir mais alto)</dd>
+          <dt><kbd>Shift</kbd></dt><dd>Correr</dd>
+          <dt><kbd>E</kbd></dt><dd>Ecoar memória numa Pedra-Eco · tocar o Relógio da Praça</dd>
+          <dt><kbd>Espaço</kbd> <kbd>Enter</kbd></dt><dd>Avançar diálogo</dd>
+          <dt><kbd>Esc</kbd></dt><dd>Pausar</dd>
+          <dt><kbd>M</kbd></dt><dd>Ligar/desligar o som</dd>
+          <dt>Celular</dt><dd>Botões na tela: ◀ ▶ mover · ⤒ pular · » correr · E ecoar · ❚❚ pausa. Toque no diálogo para avançar.</dd>
+        </dl>
+        <button data-back>Voltar</button>
+      </div>
+
+      <div id="menu-credits" class="panel hidden">
+        <h2>Créditos</h2>
+        <p>Ecos de Lumora é um projeto original.<br>
+           Toda a arte é desenhada por código no Canvas.<br>
+           Todos os sons e a música são sintetizados ao vivo (Web Audio API).<br>
+           Gráficos 3D com Three.js r160 (licença MIT, incluído em js/vendor/three).<br>
+           Nenhum asset externo é usado nesta versão.</p>
+        <p class="small">Fonte da interface: Pixelify Sans (Google Fonts, licença SIL Open Font).</p>
+        <button data-back>Voltar</button>
+      </div>
+    </section>
+
+    <!-- PAUSA -->
+    <section id="pause" class="overlay hidden">
+      <div id="pause-main" class="panel">
+        <h2>Pausado</h2>
+        <div id="pause-mission" class="mission-box">
+          <p class="kicker">missão</p>
+          <p id="pause-mission-text"></p>
+          <ul id="pause-objectives" class="objectives"></ul>
+        </div>
+        <nav class="menu-buttons">
+          <button id="btn-resume">Continuar</button>
+          <button id="btn-pause-controls">Controles</button>
+          <button id="btn-restart">Reiniciar a fase</button>
+          <button id="btn-quit">Menu principal</button>
+        </nav>
+      </div>
+      <div id="pause-controls" class="panel hidden">
+        <h2>Controles</h2>
+        <dl class="keys">
+          <dt><kbd>A</kbd> <kbd>D</kbd> ou <kbd>←</kbd> <kbd>→</kbd></dt><dd>Mover</dd>
+          <dt><kbd>Espaço</kbd></dt><dd>Pular (segure para ir mais alto)</dd>
+          <dt><kbd>Shift</kbd></dt><dd>Correr</dd>
+          <dt><kbd>E</kbd></dt><dd>Ecoar memória numa Pedra-Eco · tocar o Relógio da Praça</dd>
+          <dt><kbd>Espaço</kbd> <kbd>Enter</kbd></dt><dd>Avançar diálogo</dd>
+          <dt><kbd>Esc</kbd></dt><dd>Pausar</dd>
+          <dt><kbd>M</kbd></dt><dd>Ligar/desligar o som</dd>
+          <dt>Celular</dt><dd>Botões na tela: ◀ ▶ mover · ⤒ pular · » correr · E ecoar · ❚❚ pausa. Toque no diálogo para avançar.</dd>
+        </dl>
+        <button id="btn-pause-back">Voltar</button>
+      </div>
+    </section>
+
+    <!-- DERROTA -->
+    <section id="defeat" class="overlay hidden">
+      <div class="panel">
+        <p class="kicker">a luz da gema se apagou</p>
+        <h2>O eco se perdeu</h2>
+        <p id="defeat-stats" class="small"></p>
+        <nav class="menu-buttons">
+          <button id="btn-retry">Tentar novamente</button>
+          <button id="btn-defeat-menu">Menu principal</button>
+        </nav>
+      </div>
+    </section>
+
+    <!-- FASE CONCLUÍDA -->
+    <section id="complete" class="overlay hidden">
+      <div class="panel">
+        <p id="complete-region" class="kicker"></p>
+        <h2 id="complete-name"></h2>
+        <dl class="results">
+          <dt>Cristais</dt><dd id="complete-crystals"></dd>
+          <dt>Memórias restauradas</dt><dd id="complete-memories"></dd>
+          <dt>Tempo</dt><dd><span id="complete-time"></span> <mark id="record-time" class="record hidden">recorde!</mark></dd>
+          <dt>Pontos</dt><dd><span id="complete-score"></span> <mark id="record-score" class="record hidden">recorde!</mark></dd>
+        </dl>
+        <p id="complete-stars" class="stars-line" aria-label="Estrelas da Aurora"></p>
+        <p id="complete-bonus" class="small hidden"></p>
+        <p id="complete-ending" class="ending hidden"></p>
+        <p id="complete-next" class="small"></p>
+        <nav class="menu-buttons">
+          <button id="btn-complete-next" class="hidden">Seguir viagem</button>
+          <button id="btn-complete-map">Mapa de Lumora</button>
+          <button id="btn-complete-again">Jogar de novo</button>
+          <button id="btn-complete-menu">Menu principal</button>
+        </nav>
+      </div>
+    </section>
+
+    <!-- HUD -->
+    <div id="hud" class="hidden">
+      <div class="hud-left">
+        <div id="hud-energy" class="energy" role="img"></div>
+        <div id="hud-crystal-box" class="crystals"><i class="gem-icon"></i><span id="hud-crystals">0/0</span></div>
+        <div id="hud-fragment-box" class="fragments" title="Fragmentos de memória: guardados (encontrados/total)">
+          <i class="frag-icon"></i><span id="hud-fragments">0</span><small id="hud-fragments-found">0/0</small>
+        </div>
+        <div id="hud-ability" class="ability off" title="Habilidade: ecoar memória">
+          <kbd>E</kbd><span>Ecoar</span>
+        </div>
+        <div id="hud-ability-jump" class="ability ready hidden" title="Habilidade: Pulo-Eco (pulo duplo)">
+          <kbd>2×</kbd><span>pulo no ar · Pulo-Eco</span>
+        </div>
+      </div>
+      <div class="hud-center">
+        <span id="hud-region"></span>
+        <span id="hud-hint"></span>
+      </div>
+      <div class="hud-right">
+        <span class="score-label">pontos</span>
+        <span id="hud-score">00000</span>
+        <div id="hud-mission" class="mission hidden"><span class="mission-label">objetivo</span><span id="hud-mission-text"></span></div>
+        <button id="btn-mute" class="mute-btn" type="button" title="Som (tecla M)" aria-label="Silenciar som (tecla M)">
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M2 6h3l4-3v10l-4-3H2z" fill="currentColor"/>
+            <path class="waves" d="M11 5.5c1 .8 1 4.2 0 5M12.8 4c1.8 1.6 1.8 6.4 0 8" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            <path class="cross" d="M11 6l4 4M15 6l-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- BARRA DO CHEFE -->
+    <div id="boss-bar" class="hidden" aria-live="polite">
+      <span id="boss-name"></span>
+      <div id="boss-pips"></div>
+    </div>
+
+    <!-- AVISO DE CHECKPOINT -->
+    <div id="toast" class="hidden" role="status"></div>
+
+    <!-- CARTÃO DE REGIÃO (aparece ao entrar numa região) -->
+    <div id="region-card" class="hidden" aria-live="polite">
+      <span id="region-number"></span>
+      <strong id="region-name"></strong>
+      <em id="region-subtitle"></em>
+      <small id="region-mission"></small>
+    </div>
+
+    <!-- DIÁLOGO -->
+    <section id="dialog" class="hidden" aria-live="polite">
+      <canvas id="dialog-portrait" aria-hidden="true"></canvas>
+      <div class="dialog-body">
+        <span id="dialog-name"></span>
+        <p id="dialog-text"></p>
+      </div>
+      <span id="dialog-next" class="hidden" aria-hidden="true">▼</span>
+    </section>
+
+    <!-- ESCURECIMENTO entre cenas -->
+    <div id="fade" aria-hidden="true"></div>
+  </main>
+
+  <!-- CONTROLES DE TOQUE (só aparecem em celular/tablet, durante a fase) -->
+  <div id="touch-controls" aria-hidden="true">
+    <div class="pad pad-left">
+      <div data-touch="left" role="button" aria-label="Esquerda">◀</div>
+      <div data-touch="right" role="button" aria-label="Direita">▶</div>
+    </div>
+    <div class="pad pad-right">
+      <div data-touch="pause" class="small" role="button" aria-label="Pausar">❚❚</div>
+      <div data-touch="interact" class="small" role="button" aria-label="Ecoar memória">E</div>
+      <div data-touch="run" class="small" role="button" aria-label="Correr">»</div>
+      <div data-touch="jump" class="big" role="button" aria-label="Pular">⤒</div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
